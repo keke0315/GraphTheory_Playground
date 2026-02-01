@@ -101,6 +101,24 @@ const getActivePalette = () => {
     return customColorPallete;
 };
 
+const getEdgeColor = (from: string | number, to: string | number, oldWeight: number | null) => {
+    const edgeFrom = parseInt(from as string, 10);
+    const edgeTo = parseInt(to as string, 10);
+    const edges = GraphState.graph.getAllEdges() as EdgeImmutPlain[];
+    const match = edges.find(edge => {
+        const directedMatch = edge.from === edgeFrom && edge.to === edgeTo;
+        const undirectedMatch = !GraphState.graph.isDirected() && edge.from === edgeTo && edge.to === edgeFrom;
+        const weightMatch = oldWeight === null || edge.weight === oldWeight;
+        return (directedMatch || undirectedMatch) && weightMatch;
+    });
+    if (!match || !("color" in match)) {
+        return "DEFAULT";
+    }
+    return (match as any).color;
+};
+
+let pendingEdgeColor: string | null = null;
+
 const hasFourColorConflict = (nodeId: number, color: string) => {
     if (color === "DEFAULT") {
         return false;
@@ -120,17 +138,35 @@ const self: MainI = {
     container: document.getElementById('network')!,
     // Function used to overwrite the edge edit functionality when weights are active
     visWeightEdgeEdit: (data: VisEditEdgeInternal, callback) => {
+        const oldWeight = parseFloat(data.label!);
+        const options: ModalFormRow[] = [
+            {
+                type: "numeric",
+                label: languages.current.WeightCapacity,
+                initialValue: oldWeight
+            }
+        ];
+        const palette = getActivePalette();
+        options.push({
+            type: "select",
+            label: languages.current.Color,
+            optionText: Object.keys(palette),
+            optionValues: Object.values(palette),
+            initialValue: getEdgeColor(data.from.id, data.to.id, oldWeight)
+        });
+
         help.showFormModal(($modal, vals) => {
             callback(null);
             $modal.modal("hide");
             const value = parseFloat(vals[0]);
-            GraphState.editEdge(data.from.id, data.to.id, value, parseFloat(data.label!));
-        }, languages.current.EditEdge, languages.current.Save, languages.current.Cancel, [
-            {
-                type: "numeric",
-                label: languages.current.WeightCapacity,
-                initialValue: parseFloat(data.label!)
+            const selectedColor = vals[1] as string;
+            const color = selectedColor === "DEFAULT" ? null : selectedColor;
+            if (color && !window.settings.getOption("customColors")) {
+                window.settings.changeOption("customColors", true);
             }
+            GraphState.editEdge(data.from.id, data.to.id, value, oldWeight, color);
+        }, languages.current.EditEdge, languages.current.Save, languages.current.Cancel, [
+            ...options
         ]);
     },
     visOptions: {
@@ -207,9 +243,47 @@ const self: MainI = {
                 apply();
             },
             editEdge: (data, callback) => {
+                if (pendingEdgeColor === null) {
+                    const palette = getActivePalette();
+                    const initialColor = getEdgeColor(data.from, data.to, null);
+                    const options: ModalFormRow[] = [
+                        {
+                            type: "select",
+                            label: languages.current.Color,
+                            optionText: Object.keys(palette),
+                            optionValues: Object.values(palette),
+                            initialValue: initialColor
+                        }
+                    ];
+
+                    const $popup = help.makeFormModal(languages.current.EditEdge, languages.current.Save, languages.current.Cancel, options);
+                    $popup.on("click", ".btn-success", () => {
+                        $popup.modal("hide");
+                        const color = $popup.find("select").first().val() as string;
+                        pendingEdgeColor = color === "DEFAULT" ? null : color;
+                        if (pendingEdgeColor && !window.settings.getOption("customColors")) {
+                            window.settings.changeOption("customColors", true);
+                        }
+                        callback(null);
+                        window.network.editEdgeMode();
+                    }).on("click", ".btn-cancel", () => {
+                        $popup.modal("hide");
+                        pendingEdgeColor = null;
+                        callback(null);
+                    }).on("hidden.bs.modal", () => {
+                        $popup.remove();
+                    }).modal("show");
+                    return;
+                }
+
+                const selectedColor = pendingEdgeColor;
+                pendingEdgeColor = null;
                 callback(null);
                 self.visOptions.manipulation.deleteEdge({ edges: [data.id] });
                 self.visOptions.manipulation.addEdge(data);
+                if (selectedColor) {
+                    GraphState.editEdge(data.from, data.to, null, null, selectedColor);
+                }
             },
             deleteEdge: (data, callback) => {
                 if (typeof callback === "function") {
