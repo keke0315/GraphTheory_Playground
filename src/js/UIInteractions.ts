@@ -363,6 +363,47 @@ export default class UIInteractions {
 
         (document.querySelector("#graph-properties-label") as HTMLHeadElement).innerText = languages.current.GraphProperties;
         (document.querySelector("#results-label") as HTMLHeadElement).innerText = languages.current.Results;
+
+        const graphTheoryLabel = document.querySelector("#graph-theory-label") as HTMLHeadElement;
+        if (graphTheoryLabel) {
+            graphTheoryLabel.innerText = languages.current.GraphTheory;
+        }
+        const fourColorLabel = document.querySelector("#four-color-mode-label") as HTMLLabelElement;
+        if (fourColorLabel) {
+            fourColorLabel.innerText = languages.current.FourColorMode;
+        }
+        const fourColorToggle = document.querySelector("#four-color-mode-toggle") as HTMLInputElement;
+        if (fourColorToggle) {
+            fourColorToggle.checked = window.settings.getOption("fourColorMode") as boolean;
+            fourColorToggle.addEventListener("change", () => {
+                const enabled = fourColorToggle.checked;
+                window.settings.changeOption("fourColorMode", enabled);
+                if (enabled && !window.settings.getOption("customColors")) {
+                    window.settings.changeOption("customColors", true);
+                }
+                if (enabled) {
+                    const cleared = GraphState.getGraphData(GraphState.graph, true, true);
+                    window.main.setData(cleared, false, false);
+                }
+                const infoCard = document.getElementById("four-color-info");
+                if (infoCard) {
+                    infoCard.style.display = enabled ? "block" : "none";
+                }
+            });
+        }
+
+        const infoTitle = document.getElementById("four-color-info-title");
+        if (infoTitle) {
+            infoTitle.innerText = languages.current.FourColorInfoTitle;
+        }
+        const infoBody = document.getElementById("four-color-info-body");
+        if (infoBody) {
+            infoBody.innerHTML = languages.current.FourColorInfoBody;
+        }
+        const infoCard = document.getElementById("four-color-info");
+        if (infoCard) {
+            infoCard.style.display = (window.settings.getOption("fourColorMode") as boolean) ? "block" : "none";
+        }
     }
 
     static printHelp(): void {
@@ -395,12 +436,6 @@ export default class UIInteractions {
                 if (window.settings.getOption("customColors") !== vals[3]) {
                     window.settings.changeOption("customColors", vals[3]);
                 }
-                if (window.settings.getOption("fourColorMode") !== vals[4]) {
-                    window.settings.changeOption("fourColorMode", vals[4]);
-                }
-                if (window.settings.getOption("fourColorMode") && !window.settings.getOption("customColors")) {
-                    window.settings.changeOption("customColors", true);
-                }
             },
             languages.current.Options,
             languages.current.Save,
@@ -424,11 +459,6 @@ export default class UIInteractions {
                 {
                     label: languages.current.CustomNodeColors,
                     initialValue: window.settings.getOption("customColors"),
-                    type: "checkbox"
-                },
-                {
-                    label: languages.current.FourColorMode,
-                    initialValue: window.settings.getOption("fourColorMode"),
                     type: "checkbox"
                 }
             ],

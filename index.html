@@ -195,10 +195,30 @@
                             <nav class="nav flex-column" id="graphProps"></nav>
                         </div>
                     </div>
+                    <hr class="d-none d-lg-block"/>
+                    <div class="row col">
+                        <div class="card-body">
+                            <h4 id="graph-theory-label">Graph Theory</h4>
+                            <nav class="nav flex-lg-column flex-row">
+                                <div class="form-check nav-link" style="padding-left: 1.25rem;">
+                                    <input class="form-check-input" type="checkbox" id="four-color-mode-toggle">
+                                    <label class="form-check-label" for="four-color-mode-toggle" id="four-color-mode-label">Four Color Mode</label>
+                                </div>
+                            </nav>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-lg-10">
                     <div class="row">
                         <div class="col">
+                            <div class="card" id="four-color-info" style="margin-bottom:1rem; margin-top:1rem; display:none;">
+                                <div class="card-header">
+                                    <h4 class="card-title" id="four-color-info-title">Four Color</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div id="four-color-info-body"></div>
+                                </div>
+                            </div>
                             <div class="card" style="margin-bottom:1rem; margin-top:1rem;">
                                 <div class="card-body" style="padding:0">
                                     <div id="network" style="height: 80vh;" tabindex="0"></div>

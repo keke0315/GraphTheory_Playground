@@ -53,15 +53,17 @@ export default {
     Save: "Save",
     Cancel: "Cancel",
     IssuesHTML: "<h4>For support see the " +
-        "<a href='https://github.com/MikeDombo/graphPlayground' target='_blank'>GitHub repository</a>" +
-        " for guides</h4> <h4>See <a href='https://github.com/MikeDombo/graphPlayground/issues' target='_blank'>" +
+        "<a href='https://github.com/keke0315/GraphTheory_Playground' target='_blank'>GitHub repository</a>" +
+        " for guides</h4> <h4>See <a href='https://github.com/keke0315/GraphTheory_Playground/issues' target='_blank'>" +
         "GitHub issues</a> to submit bugs or feature requests.</h4>",
 
     GraphPhysics: "Graph Physics",
     DiGraph: "Directed Graph",
     WeightedGraph: "Weighted Graph",
     CustomNodeColors: "Customize Node Colors",
-    FourColorMode: "Four Color Mode",
+    FourColorMode: "Four Color",
+    FourColorInfoTitle: "Four Color Theorem",
+    FourColorInfoBody: "<p>The Four Color Theorem states that any planar map can be colored using at most four colors so that adjacent regions have different colors. It was first proposed in the 1850s and proved in 1976 using computer assistance.</p><p>In this mode, you can color vertices using only four colors. Adjacent vertices cannot share the same color. You can also use Graph Coloring for a quick result.</p>",
     ThisTask: "This task",
     ReColor: "Apply New Colors To Graph",
     File: "File",
@@ -81,6 +83,7 @@ export default {
     Algorithms: "Algorithms",
     GraphProperties: "Graph Properties",
     Results: "Results",
+    GraphTheory: "Graph Theory",
     AddNode: "Add Node",
     EditEdge: "Edit Edge",
     EditNode: "Edit Node",
