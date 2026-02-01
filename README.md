@@ -3,8 +3,8 @@ A single-page webapp to build graphs and run algorithms on them with no server-s
 
 Use it on GitHub Pages: https://keke0315.github.io/GraphTheory_Playground/
 
-[![pipeline status](https://git.home.mikedombrowski.com/michael/graphPlayground/badges/master/pipeline.svg)](https://git.home.mikedombrowski.com/michael/graphPlayground/commits/master)
-[![coverage report](https://git.home.mikedombrowski.com/michael/graphPlayground/badges/master/coverage.svg)](https://git.home.mikedombrowski.com/michael/graphPlayground/commits/master)
+<!-- [![pipeline status](https://git.home.mikedombrowski.com/michael/graphPlayground/badges/master/pipeline.svg)](https://git.home.mikedombrowski.com/michael/graphPlayground/commits/master)
+[![coverage report](https://git.home.mikedombrowski.com/michael/graphPlayground/badges/master/coverage.svg)](https://git.home.mikedombrowski.com/michael/graphPlayground/commits/master) -->
 
 ## [Usage](documentation/Usage.md)
 
