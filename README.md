@@ -49,6 +49,10 @@ Use it on GitHub Pages: https://keke0315.github.io/GraphTheory_Playground/
 - Topological Sort
 
 ## Features
+### Four Color Mode
+- Manually assign one of four colors to each vertex
+- Shows an error if adjacent vertices share the same color
+
 ### Builtin Graphs
 - Petersen Graph
 - Konigsberg Bridges Graph

@@ -61,6 +61,7 @@ export default {
     DiGraph: "Directed Graph",
     WeightedGraph: "Weighted Graph",
     CustomNodeColors: "Customize Node Colors",
+    FourColorMode: "Four Color Mode",
     ThisTask: "This task",
     ReColor: "Apply New Colors To Graph",
     File: "File",
@@ -89,6 +90,8 @@ export default {
     Color: "Color",
     ConnectNodeToItselfConfirmation: "Do you want to connect the node to itself?",
     InvalidLabelOrId: "Invalid Label or ID",
+    FourColorConflictTitle: "Invalid Coloring",
+    FourColorConflictBody: "Adjacent vertices cannot share the same color in Four Color Mode.",
 
 
     // Import/Export

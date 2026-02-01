@@ -395,6 +395,12 @@ export default class UIInteractions {
                 if (window.settings.getOption("customColors") !== vals[3]) {
                     window.settings.changeOption("customColors", vals[3]);
                 }
+                if (window.settings.getOption("fourColorMode") !== vals[4]) {
+                    window.settings.changeOption("fourColorMode", vals[4]);
+                }
+                if (window.settings.getOption("fourColorMode") && !window.settings.getOption("customColors")) {
+                    window.settings.changeOption("customColors", true);
+                }
             },
             languages.current.Options,
             languages.current.Save,
@@ -418,6 +424,11 @@ export default class UIInteractions {
                 {
                     label: languages.current.CustomNodeColors,
                     initialValue: window.settings.getOption("customColors"),
+                    type: "checkbox"
+                },
+                {
+                    label: languages.current.FourColorMode,
+                    initialValue: window.settings.getOption("fourColorMode"),
                     type: "checkbox"
                 }
             ],

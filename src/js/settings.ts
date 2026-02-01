@@ -3,6 +3,8 @@ interface SettingsList {
     nodePhysics: boolean;
     direction: boolean;
     weights: boolean;
+    customColors: boolean;
+    fourColorMode: boolean;
 
     [index: string]: boolean;
 }
@@ -11,7 +13,9 @@ export default class Settings {
     private static readonly defaults: SettingsList = {
         nodePhysics: true,
         direction: false,
-        weights: false
+        weights: false,
+        customColors: false,
+        fourColorMode: false
     };
     private static current: any = {};
 

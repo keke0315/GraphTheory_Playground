@@ -86,6 +86,35 @@ const customColorPallete = {
     "Purple": "purple",
 };
 
+const fourColorPalette = {
+    "Default": "DEFAULT",
+    "Red": "#e74c3c",
+    "Green": "#27ae60",
+    "Blue": "#3498db",
+    "Yellow": "#f1c40f"
+};
+
+const getActivePalette = () => {
+    if (window.settings.getOption("fourColorMode")) {
+        return fourColorPalette;
+    }
+    return customColorPallete;
+};
+
+const hasFourColorConflict = (nodeId: number, color: string) => {
+    if (color === "DEFAULT") {
+        return false;
+    }
+    const adjacency = GraphState.graph.getNodeAdjacency(nodeId);
+    return adjacency.some(adjacentId => {
+        const adjacent = GraphState.graph.getNode(adjacentId) as NodeImmutPlain | boolean;
+        if (!adjacent || typeof adjacent === "boolean") {
+            return false;
+        }
+        return (adjacent as any).color === color;
+    });
+};
+
 const self: MainI = {
     graphState: GraphState,
     container: document.getElementById('network')!,
@@ -117,7 +146,8 @@ const self: MainI = {
                     { type: "text", label: languages.current.LabelLabel, initialValue: await GraphState.getProperty("vertices") },
                 ];
                 if (customColors) {
-                    options.push({ type: "select", label: languages.current.Color, optionText: Object.keys(customColorPallete), optionValues: Object.values(customColorPallete) });
+                    const palette = getActivePalette();
+                    options.push({ type: "select", label: languages.current.Color, optionText: Object.keys(palette), optionValues: Object.values(palette) });
                 }
                 const $popup = help.makeFormModal(languages.current.AddNode, languages.current.Save, languages.current.Cancel, options);
 
@@ -144,7 +174,8 @@ const self: MainI = {
                     { type: "text", label: languages.current.LabelLabel, initialValue: data.label },
                 ];
                 if (customColors) {
-                    options.push({ type: "select", label: languages.current.Color, optionText: Object.keys(customColorPallete), optionValues: Object.values(customColorPallete), initialValue: initialColor });
+                    const palette = getActivePalette();
+                    options.push({ type: "select", label: languages.current.Color, optionText: Object.keys(palette), optionValues: Object.values(palette), initialValue: initialColor });
                 }
                 const $popup = help.makeFormModal(languages.current.EditNode, languages.current.Save, languages.current.Cancel, options);
 
@@ -222,6 +253,16 @@ const self: MainI = {
             GraphState.addNode(data);
         }
         else if (operation === "editNode") {
+            if (window.settings.getOption("fourColorMode") && data.color) {
+                const conflict = hasFourColorConflict(parseInt(data.id, 10), data.color);
+                if (conflict) {
+                    help.showSimpleModal(
+                        languages.current.FourColorConflictTitle,
+                        `<p>${languages.current.FourColorConflictBody}</p>`
+                    );
+                    return;
+                }
+            }
             GraphState.editNode(data.id, data.label, data.color);
         }
     },
