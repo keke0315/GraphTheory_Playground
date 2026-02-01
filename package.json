@@ -9,7 +9,7 @@
     "scripts": {
         "dev": "webpack --mode development",
         "build": "cross-env PUBLIC_PATH=/GraphTheory_Playground/ webpack --mode production",
-        "deploy": "npm run build && git add -f dist && git commit -m \"GitHub pages update\" && git subtree push --prefix dist origin gh-pages && git reset --soft HEAD~1 && git rm -r --cached dist",
+        "deploy": "npm run build && git add -f dist && git commit -m \"GitHub pages update\" && git subtree push --prefix dist origin gh-pages --force && git reset --soft HEAD~1 && git rm -r --cached dist",
         "webpackStats": "webpack --json --mode production | webpack-bundle-size-analyzer",
         "sonarqube": "c:\\sonar\\sonar-scanner-3.0.3\\bin\\sonar-scanner.bat",
         "test": "cross-env TS_NODE_COMPILER_OPTIONS={\\\"module\\\":\\\"commonjs\\\"} mocha -r ts-node/register/transpile-only --recursive \"./test/**/*Test.ts\"",
