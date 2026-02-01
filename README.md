@@ -69,3 +69,6 @@ Use it on GitHub Pages: https://keke0315.github.io/GraphTheory_Playground/
 ### Many Algorithms - [Enumerated Above](#supported-algorithms-by-graph-type)
 
 ### Multiple Graph Types - [Enumerated Above](#supported-graph-types)
+
+## Reference
+- This project is based on https://github.com/MikeDombo/graphPlayground
