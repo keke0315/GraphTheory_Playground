@@ -102,11 +102,17 @@ const getActivePalette = () => {
     return customColorPallete;
 };
 
-const getEdgeColor = (from: string | number, to: string | number, oldWeight: number | null) => {
+const getEdgeColor = (from: string | number, to: string | number, oldWeight: number | null, edgeId?: string | number) => {
     const edgeFrom = parseInt(from as string, 10);
     const edgeTo = parseInt(to as string, 10);
     const edges = GraphState.graph.getAllEdges() as EdgeImmutPlain[];
     const match = edges.find(edge => {
+        if (typeof edgeId !== "undefined" && edgeId !== null) {
+            if ("id" in edge && `${(edge as any).id}` === `${edgeId}`) {
+                return true;
+            }
+            return false;
+        }
         const directedMatch = edge.from === edgeFrom && edge.to === edgeTo;
         const undirectedMatch = !GraphState.graph.isDirected() && edge.from === edgeTo && edge.to === edgeFrom;
         const weightMatch = oldWeight === null || edge.weight === oldWeight;
@@ -624,7 +630,7 @@ const self: MainI = {
                             oldWeight = parsedWeight;
                         }
                     }
-                    const existingColor = getEdgeColor(from, to, oldWeight);
+                    const existingColor = getEdgeColor(from, to, oldWeight, edgeId);
                     if (existingColor === "red") {
                         updateSevenBridgeStatus(languages.current.SevenBridgesRepeatEdgeError);
                         return;
@@ -656,7 +662,7 @@ const self: MainI = {
                     if (!window.settings.getOption("customColors")) {
                         window.settings.changeOption("customColors", true);
                     }
-                    GraphState.editEdge(edgeData.from, edgeData.to, null, oldWeight, "red", true);
+                    GraphState.editEdgeById(edgeId, null, "red");
                     updateSevenBridgeStatus();
                 }
             }

@@ -242,6 +242,13 @@ export default class GraphState {
         }
     }
 
+    static editEdgeById(id: string | number, newWeight: number | null, color: string | null = null, graph = GraphState.graph) {
+        const newGraph = graph.editEdgeById(id, newWeight, color);
+        if (newGraph instanceof GraphImmut) {
+            window.main.setData(GraphState.getGraphData(newGraph), false, false);
+        }
+    }
+
     static deleteEdge(from: number | string, to: number | string, weight: (undefined | null | number) = null, graph = GraphState.graph) {
         const edgeFrom = getInt(from);
         const edgeTo = getInt(to);
@@ -364,6 +371,11 @@ export default class GraphState {
     static getGraphData(graph = GraphState.graph, clearNodeColors = false, clearEdgeColors = false): GraphPlain {
         const nodes = graph.getAllNodes() as NodeImmutPlain[];
         const edges = graph.getAllEdges() as EdgeImmutPlain[];
+        edges.forEach((edge, index) => {
+            if (typeof (edge as any).id === "undefined") {
+                (edge as any).id = index;
+            }
+        });
         return {
             nodes: clearNodeColors ? GraphState.clearColorFromNodes(nodes) : nodes,
             edges: clearEdgeColors ? GraphState.clearColorFromEdges(edges) : edges,

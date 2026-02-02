@@ -352,6 +352,31 @@ export default class GraphImmut {
         return new GraphImmut(this.nodes, newEdges, this.directed, this.weighted);
     }
 
+    editEdgeById(id: string | number, newWeight: any, color: string | null = null): GraphImmut | boolean {
+        let foundFirst = false;
+        let newEdges = this.edges;
+
+        this.edges.forEach((edge, index) => {
+            if (foundFirst) {
+                return;
+            }
+            const edgeId = edge.getAttribute("id");
+            if (typeof edgeId !== "undefined" && `${edgeId}` === `${id}`) {
+                if (color !== null) {
+                    newEdges = newEdges.set(index,
+                        edge.editEdge(newWeight === null ? null : parseFloat(newWeight),
+                            { color: color }));
+                }
+                else {
+                    newEdges = newEdges.set(index, edge.editEdge(newWeight === null ? null : parseFloat(newWeight)));
+                }
+                foundFirst = true;
+            }
+        });
+
+        return new GraphImmut(this.nodes, newEdges, this.directed, this.weighted);
+    }
+
     getAllNodes(rich = false): NodeImmut[] | NodeImmutPlain[] {
         if (rich) {
             return this.nodes.toArray();
