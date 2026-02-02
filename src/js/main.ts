@@ -42,7 +42,8 @@ export interface MainI {
     saveStateLocalStorage: () => void;
     shuffleNetworkLayout: () => void;
     randomizeNetworkLayoutSeed: (network: VisNetworkInternals) => void;
-    addNetworkListeners: (network: Network) => void
+    addNetworkListeners: (network: Network) => void;
+    resetSevenBridgeWalk: () => void;
 }
 
 interface VisNetworkEvent {
@@ -115,6 +116,54 @@ const getEdgeColor = (from: string | number, to: string | number, oldWeight: num
         return "DEFAULT";
     }
     return (match as any).color;
+};
+
+let sevenBridgeCurrentNodes: Array<number | string> = [];
+
+const updateSevenBridgeStatus = (message: string | null = null) => {
+    const body = document.getElementById("seven-bridge-status-body");
+    if (!body) {
+        return;
+    }
+    if (!window.settings.getOption("sevenBridgeMode")) {
+        body.innerHTML = "";
+        return;
+    }
+    let currentText = languages.current.SevenBridgesNoCurrentNode;
+    if (sevenBridgeCurrentNodes.length > 0) {
+        const joined = sevenBridgeCurrentNodes
+            .map((id) => help.htmlEncode(GraphState.nodeIDToLabel(parseInt(id as string, 10))))
+            .join(` ${languages.current.Or} `);
+        currentText = help.stringReplacement(languages.current.SevenBridgesCurrentNodes, joined);
+    }
+    let html = `<p>${currentText}</p>`;
+    if (message) {
+        html += `<p class="text-danger">${message}</p>`;
+    }
+    body.innerHTML = html;
+    applySevenBridgeNodeHighlight();
+};
+
+const applySevenBridgeNodeHighlight = () => {
+    if (!window.settings.getOption("sevenBridgeMode")) {
+        return;
+    }
+    if (!window.settings.getOption("customColors")) {
+        window.settings.changeOption("customColors", true);
+    }
+    const nodes = GraphState.graph.getAllNodes() as NodeImmutPlain[];
+    const edges = GraphState.graph.getAllEdges() as EdgeImmutPlain[];
+    nodes.forEach((node) => {
+        const isCurrent = sevenBridgeCurrentNodes.includes(node.id);
+        node.color = isCurrent ? "red" : null;
+    });
+    edges.forEach((edge) => {
+        if ("color" in edge && edge.color === "red") {
+            return;
+        }
+        edge.color = "#848484";
+    });
+    self.setData({ nodes, edges }, false, false);
 };
 
 const hasFourColorConflict = (nodeId: number, color: string) => {
@@ -560,6 +609,57 @@ const self: MainI = {
         let lastNetworkClickEvent: Event | null = null;
         network.on('click', (event) => {
             lastNetworkClickEvent = event;
+            if (window.settings.getOption("sevenBridgeMode")
+                && "edges" in event
+                && (event as any).edges.length === 1) {
+                const edgeId = (event as any).edges[0];
+                const edgeData = (network as any).body.data.edges.get(edgeId);
+                if (edgeData) {
+                    const from = edgeData.from;
+                    const to = edgeData.to;
+                    let oldWeight: number | null = null;
+                    if (typeof edgeData.label !== "undefined") {
+                        const parsedWeight = parseFloat(edgeData.label);
+                        if (!Number.isNaN(parsedWeight)) {
+                            oldWeight = parsedWeight;
+                        }
+                    }
+                    const existingColor = getEdgeColor(from, to, oldWeight);
+                    if (existingColor === "red") {
+                        updateSevenBridgeStatus(languages.current.SevenBridgesRepeatEdgeError);
+                        return;
+                    }
+                    const fromIn = sevenBridgeCurrentNodes.includes(from);
+                    const toIn = sevenBridgeCurrentNodes.includes(to);
+
+                    if (sevenBridgeCurrentNodes.length > 0 && !fromIn && !toIn) {
+                        updateSevenBridgeStatus(languages.current.SevenBridgesJumpError);
+                        return;
+                    }
+
+                    if (sevenBridgeCurrentNodes.length === 0) {
+                        sevenBridgeCurrentNodes = [from, to];
+                    }
+                    else if (fromIn && toIn) {
+                        if (from === to) {
+                            sevenBridgeCurrentNodes = [from];
+                        }
+                        else {
+                            sevenBridgeCurrentNodes = [from, to];
+                        }
+                    }
+                    else {
+                        const nextNode = fromIn ? to : from;
+                        sevenBridgeCurrentNodes = [nextNode];
+                    }
+
+                    if (!window.settings.getOption("customColors")) {
+                        window.settings.changeOption("customColors", true);
+                    }
+                    GraphState.editEdge(edgeData.from, edgeData.to, null, oldWeight, "red", true);
+                    updateSevenBridgeStatus();
+                }
+            }
         });
 
         // Delete key to delete node or edge
@@ -590,6 +690,15 @@ const self: MainI = {
                 lastNetworkClickEvent = null;
             }
         });
+
+        updateSevenBridgeStatus();
+    },
+
+    resetSevenBridgeWalk: () => {
+        sevenBridgeCurrentNodes = [];
+        const cleared = GraphState.getGraphData(GraphState.graph, true, true);
+        self.setData(cleared, false, false);
+        updateSevenBridgeStatus();
     },
 
 };

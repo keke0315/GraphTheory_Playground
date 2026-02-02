@@ -406,12 +406,19 @@ export default class UIInteractions {
                     window.settings.changeOption("customColors", true);
                 }
                 if (enabled) {
-                    const cleared = GraphState.getGraphData(GraphState.graph, false, true);
+                    const cleared = GraphState.getGraphData(GraphState.graph, true, true);
                     window.main.setData(cleared, false, false);
+                }
+                if (window.main.resetSevenBridgeWalk) {
+                    window.main.resetSevenBridgeWalk();
                 }
                 const infoCard = document.getElementById("seven-bridge-info");
                 if (infoCard) {
                     infoCard.style.display = enabled ? "block" : "none";
+                }
+                const statusCard = document.getElementById("seven-bridge-status");
+                if (statusCard) {
+                    statusCard.style.display = enabled ? "block" : "none";
                 }
             });
         }
@@ -419,6 +426,14 @@ export default class UIInteractions {
         const infoTitle = document.getElementById("four-color-info-title");
         if (infoTitle) {
             infoTitle.innerText = languages.current.FourColorInfoTitle;
+        }
+        const fourColorRestart = document.getElementById("four-color-restart") as HTMLButtonElement | null;
+        if (fourColorRestart) {
+            fourColorRestart.innerText = languages.current.FourColorRestart;
+            fourColorRestart.onclick = () => {
+                const cleared = GraphState.getGraphData(GraphState.graph, true, true);
+                window.main.setData(cleared, false, false);
+            };
         }
         const infoBody = document.getElementById("four-color-info-body");
         if (infoBody) {
@@ -440,6 +455,28 @@ export default class UIInteractions {
         const sevenBridgeInfo = document.getElementById("seven-bridge-info");
         if (sevenBridgeInfo) {
             sevenBridgeInfo.style.display = (window.settings.getOption("sevenBridgeMode") as boolean) ? "block" : "none";
+        }
+
+        const sevenBridgeStatusTitle = document.getElementById("seven-bridge-status-title");
+        if (sevenBridgeStatusTitle) {
+            sevenBridgeStatusTitle.innerText = languages.current.SevenBridgesStatusTitle;
+        }
+        const sevenBridgeRestart = document.getElementById("seven-bridge-restart") as HTMLButtonElement | null;
+        if (sevenBridgeRestart) {
+            sevenBridgeRestart.innerText = languages.current.SevenBridgesRestart;
+            sevenBridgeRestart.onclick = () => {
+                if (window.main.resetSevenBridgeWalk) {
+                    window.main.resetSevenBridgeWalk();
+                }
+            };
+        }
+        const sevenBridgeStatusBody = document.getElementById("seven-bridge-status-body");
+        if (sevenBridgeStatusBody) {
+            sevenBridgeStatusBody.innerHTML = `<p>${languages.current.SevenBridgesNoCurrentNode}</p>`;
+        }
+        const sevenBridgeStatus = document.getElementById("seven-bridge-status");
+        if (sevenBridgeStatus) {
+            sevenBridgeStatus.style.display = (window.settings.getOption("sevenBridgeMode") as boolean) ? "block" : "none";
         }
     }
 
