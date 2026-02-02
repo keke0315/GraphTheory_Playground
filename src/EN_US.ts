@@ -63,7 +63,7 @@ export default {
     CustomNodeColors: "Customize Node Colors",
     FourColorMode: "Four Color",
     FourColorInfoTitle: "Four Color Theorem",
-    FourColorInfoBody: "<p>The Four Color Theorem states that any planar map can be colored using at most four colors so that adjacent regions have different colors. It was first proposed in the 1850s and proved in 1976 using computer assistance.</p><p>In this mode, you can color vertices using only four colors. Adjacent vertices cannot share the same color. You can also use Graph Coloring for a quick result.</p>",
+    FourColorInfoBody: "<p>The Four Color Theorem states that any planar map can be colored using at most four colors so that adjacent regions have different colors. It was first proposed in the 1850s and proved in 1976 using computer assistance.</p><p>We model the map as a graph: each vertex represents a region, and an edge between two vertices means the regions are adjacent. In this mode, you can color vertices using only four colors. Adjacent vertices cannot share the same color. You can also use Graph Coloring for a quick result.</p>",
     FourColorRestart: "Restart",
     SevenBridgesMode: "Seven Bridges",
     SevenBridgesInfoTitle: "Seven Bridges of K\u00f6nigsberg",
