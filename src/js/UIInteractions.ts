@@ -423,6 +423,23 @@ export default class UIInteractions {
             });
         }
 
+        const ramseyNumberLabel = document.querySelector("#ramsey-number-mode-label") as HTMLLabelElement;
+        if (ramseyNumberLabel) {
+            ramseyNumberLabel.innerText = languages.current.RamseyNumberMode;
+        }
+        const ramseyNumberToggle = document.querySelector("#ramsey-number-mode-toggle") as HTMLInputElement;
+        if (ramseyNumberToggle) {
+            ramseyNumberToggle.checked = window.settings.getOption("ramseyNumberMode") as boolean;
+            ramseyNumberToggle.addEventListener("change", () => {
+                const enabled = ramseyNumberToggle.checked;
+                window.settings.changeOption("ramseyNumberMode", enabled);
+                const infoCard = document.getElementById("ramsey-number-info");
+                if (infoCard) {
+                    infoCard.style.display = enabled ? "block" : "none";
+                }
+            });
+        }
+
         const infoTitle = document.getElementById("four-color-info-title");
         if (infoTitle) {
             infoTitle.innerText = languages.current.FourColorInfoTitle;
@@ -455,6 +472,19 @@ export default class UIInteractions {
         const sevenBridgeInfo = document.getElementById("seven-bridge-info");
         if (sevenBridgeInfo) {
             sevenBridgeInfo.style.display = (window.settings.getOption("sevenBridgeMode") as boolean) ? "block" : "none";
+        }
+
+        const ramseyNumberTitle = document.getElementById("ramsey-number-info-title");
+        if (ramseyNumberTitle) {
+            ramseyNumberTitle.innerText = languages.current.RamseyNumberInfoTitle;
+        }
+        const ramseyNumberBody = document.getElementById("ramsey-number-info-body");
+        if (ramseyNumberBody) {
+            ramseyNumberBody.innerHTML = languages.current.RamseyNumberInfoBody;
+        }
+        const ramseyNumberInfo = document.getElementById("ramsey-number-info");
+        if (ramseyNumberInfo) {
+            ramseyNumberInfo.style.display = (window.settings.getOption("ramseyNumberMode") as boolean) ? "block" : "none";
         }
 
         const sevenBridgeStatusTitle = document.getElementById("seven-bridge-status-title");

@@ -17,7 +17,8 @@ export default class Settings {
         weights: false,
         customColors: false,
         fourColorMode: false,
-        sevenBridgeMode: false
+            sevenBridgeMode: false,
+            ramseyNumberMode: false
     };
     private static current: any = {};
 
