@@ -233,10 +233,10 @@ export default class GraphState {
     }
 
     static editEdge(from: number | string, to: number | string,
-        newWeight: number | null, oldWeight: number | null, color: string | null = null, graph = GraphState.graph) {
+        newWeight: number | null, oldWeight: number | null, color: string | null = null, preferLast = false, graph = GraphState.graph) {
         const edgeFrom = getInt(from);
         const edgeTo = getInt(to);
-        const newGraph = graph.editEdge(edgeFrom, edgeTo, newWeight, oldWeight, color);
+        const newGraph = graph.editEdge(edgeFrom, edgeTo, newWeight, oldWeight, color, preferLast);
         if (newGraph instanceof GraphImmut) {
             window.main.setData(GraphState.getGraphData(newGraph), false, false);
         }

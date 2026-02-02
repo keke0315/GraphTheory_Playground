@@ -297,7 +297,7 @@ export default class GraphImmut {
         return new GraphImmut(this.nodes, newEdges, this.directed, this.weighted);
     }
 
-    editEdge(from: number, to: number, newWeight: any, oldWeight: any = null, color: string | null = null): GraphImmut | boolean {
+    editEdge(from: number, to: number, newWeight: any, oldWeight: any = null, color: string | null = null, preferLast = false): GraphImmut | boolean {
         let foundFirst = false;
 
         if (oldWeight !== null) {
@@ -305,26 +305,49 @@ export default class GraphImmut {
         }
 
         let newEdges = this.edges;
-        this.edges.forEach((edge, index) => {
-            if (foundFirst) {
-                return;
-            }
-
-            if (((edge.getFrom() === from && edge.getTo() === to)
-                || (!this.isDirected() && edge.getFrom() === to && edge.getTo() === from))
-                && (oldWeight === null || edge.getWeight() === oldWeight)) {
-
-                if (color !== null) {
-                    newEdges = newEdges.set(index,
-                        edge.editEdge(newWeight === null ? null : parseFloat(newWeight),
-                            { color: color }));
+        if (preferLast) {
+            for (let index = this.edges.size - 1; index >= 0; index--) {
+                if (foundFirst) {
+                    break;
                 }
-                else {
-                    newEdges = newEdges.set(index, edge.editEdge(newWeight === null ? null : parseFloat(newWeight)));
+                const edge = this.edges.get(index)!;
+                if (((edge.getFrom() === from && edge.getTo() === to)
+                    || (!this.isDirected() && edge.getFrom() === to && edge.getTo() === from))
+                    && (oldWeight === null || edge.getWeight() === oldWeight)) {
+
+                    if (color !== null) {
+                        newEdges = newEdges.set(index,
+                            edge.editEdge(newWeight === null ? null : parseFloat(newWeight),
+                                { color: color }));
+                    }
+                    else {
+                        newEdges = newEdges.set(index, edge.editEdge(newWeight === null ? null : parseFloat(newWeight)));
+                    }
+                    foundFirst = true;
                 }
-                foundFirst = true;
             }
-        });
+        } else {
+            this.edges.forEach((edge, index) => {
+                if (foundFirst) {
+                    return;
+                }
+
+                if (((edge.getFrom() === from && edge.getTo() === to)
+                    || (!this.isDirected() && edge.getFrom() === to && edge.getTo() === from))
+                    && (oldWeight === null || edge.getWeight() === oldWeight)) {
+
+                    if (color !== null) {
+                        newEdges = newEdges.set(index,
+                            edge.editEdge(newWeight === null ? null : parseFloat(newWeight),
+                                { color: color }));
+                    }
+                    else {
+                        newEdges = newEdges.set(index, edge.editEdge(newWeight === null ? null : parseFloat(newWeight)));
+                    }
+                    foundFirst = true;
+                }
+            });
+        }
 
         return new GraphImmut(this.nodes, newEdges, this.directed, this.weighted);
     }

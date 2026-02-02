@@ -5,6 +5,7 @@ interface SettingsList {
     weights: boolean;
     customColors: boolean;
     fourColorMode: boolean;
+    sevenBridgeMode: boolean;
 
     [index: string]: boolean;
 }
@@ -15,7 +16,8 @@ export default class Settings {
         direction: false,
         weights: false,
         customColors: false,
-        fourColorMode: false
+        fourColorMode: false,
+        sevenBridgeMode: false
     };
     private static current: any = {};
 
