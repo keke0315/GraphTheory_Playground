@@ -44,6 +44,7 @@ export interface MainI {
     randomizeNetworkLayoutSeed: (network: VisNetworkInternals) => void;
     addNetworkListeners: (network: Network) => void;
     resetSevenBridgeWalk: () => void;
+    updateRamseyStatus: () => void;
 }
 
 interface VisNetworkEvent {
@@ -163,13 +164,117 @@ const applySevenBridgeNodeHighlight = () => {
         const isCurrent = sevenBridgeCurrentNodes.includes(node.id);
         node.color = isCurrent ? "red" : null;
     });
-    edges.forEach((edge) => {
+    edges.forEach((edge, index) => {
+        if (typeof (edge as any).id === "undefined") {
+            (edge as any).id = index;
+        }
         if ("color" in edge && edge.color === "red") {
             return;
         }
         edge.color = "#848484";
     });
-    self.setData({ nodes, edges }, false, false);
+    GraphState.graph = new GraphImmut(nodes, edges, GraphState.graph.isDirected(), GraphState.graph.isWeighted());
+    if (window.network && (window.network as any).body?.data) {
+        const nodeUpdates = nodes.map((node) => ({
+            id: node.id,
+            color: node.color ? { background: node.color } : null
+        }));
+        const edgeUpdates = edges.map((edge) => ({
+            id: (edge as any).id,
+            color: edge.color ? { color: edge.color } : undefined
+        }));
+        (window.network as any).body.data.nodes.update(nodeUpdates);
+        (window.network as any).body.data.edges.update(edgeUpdates);
+    }
+};
+
+const updateRamseyStatus = () => {
+    if (!window.settings.getOption("ramseyNumberMode")) {
+        return;
+    }
+    const statusBody = document.getElementById("ramsey-number-status-body");
+    if (!statusBody) {
+        return;
+    }
+    const sInput = document.getElementById("ramsey-number-s") as HTMLInputElement | null;
+    const tInput = document.getElementById("ramsey-number-t") as HTMLInputElement | null;
+    const sValue = sInput ? parseInt(sInput.value, 10) : 0;
+    const tValue = tInput ? parseInt(tInput.value, 10) : 0;
+    const nodes = GraphState.graph.getAllNodes() as NodeImmutPlain[];
+    const edges = GraphState.graph.getAllEdges() as EdgeImmutPlain[];
+
+    if (!Number.isFinite(sValue) || !Number.isFinite(tValue) || sValue <= 0 || tValue <= 0) {
+        statusBody.innerHTML = "<p>Please enter positive integers for s and t.</p>";
+        return;
+    }
+
+    if (sValue > nodes.length || tValue > nodes.length) {
+        statusBody.innerHTML = "<p>s or t is larger than the number of vertices.</p>";
+        return;
+    }
+
+    const keyFor = (from: number, to: number) => {
+        if (GraphState.graph.isDirected()) {
+            return `${from}->${to}`;
+        }
+        return from < to ? `${from}-${to}` : `${to}-${from}`;
+    };
+
+    const edgeColorMap = new Map<string, string>();
+    edges.forEach((edge) => {
+        const color = (edge as any).color as string | undefined;
+        const normalized = color === "red" ? "red" : "default";
+        edgeColorMap.set(keyFor(edge.from, edge.to), normalized);
+    });
+
+    const isRedEdge = (from: number, to: number) => edgeColorMap.get(keyFor(from, to)) === "red";
+    const isDefaultEdge = (from: number, to: number) => edgeColorMap.get(keyFor(from, to)) === "default";
+
+    const nodeIds = nodes.map((n) => n.id as number);
+
+    const findSubset = (size: number, isValid: (subset: number[]) => boolean): number[] | null => {
+        const result: number[] = [];
+        const dfs = (start: number, left: number): boolean => {
+            if (left === 0) {
+                return isValid(result);
+            }
+            for (let i = start; i <= nodeIds.length - left; i++) {
+                result.push(nodeIds[i]);
+                if (dfs(i + 1, left - 1)) {
+                    return true;
+                }
+                result.pop();
+            }
+            return false;
+        };
+        return dfs(0, size) ? [...result] : null;
+    };
+
+    const redClique = findSubset(sValue, (subset) => {
+        for (let i = 0; i < subset.length; i++) {
+            for (let j = i + 1; j < subset.length; j++) {
+                if (!isRedEdge(subset[i], subset[j])) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    });
+
+    const defaultClique = findSubset(tValue, (subset) => {
+        for (let i = 0; i < subset.length; i++) {
+            for (let j = i + 1; j < subset.length; j++) {
+                if (!isDefaultEdge(subset[i], subset[j])) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    });
+
+    const redText = redClique ? redClique.join(", ") : "None";
+    const defaultText = defaultClique ? defaultClique.join(", ") : "None";
+    statusBody.innerHTML = `<p>Red clique (size s="${sValue}"): ${redText}</p><p>Blue clique (size t="${tValue}"): ${defaultText}</p>`;
 };
 
 const hasFourColorConflict = (nodeId: number, color: string) => {
@@ -662,9 +767,31 @@ const self: MainI = {
                     if (!window.settings.getOption("customColors")) {
                         window.settings.changeOption("customColors", true);
                     }
-                    GraphState.editEdgeById(edgeId, null, "red");
+                    GraphState.editEdgeById(edgeId, null, "red", true);
                     updateSevenBridgeStatus();
                 }
+            }
+            if (window.settings.getOption("ramseyNumberMode")
+                && "edges" in event
+                && (event as any).edges.length === 1) {
+                const edgeId = (event as any).edges[0];
+                if (!window.settings.getOption("customColors")) {
+                    window.settings.changeOption("customColors", true);
+                }
+                GraphState.editEdgeById(edgeId, null, "red", true);
+                updateRamseyStatus();
+            }
+        });
+
+        network.on("oncontext", (event: any) => {
+            if (!window.settings.getOption("ramseyNumberMode")) {
+                return;
+            }
+            const edgeId = (network as any).getEdgeAt(event.pointer.DOM);
+            if (typeof edgeId !== "undefined" && edgeId !== null) {
+                event.event.preventDefault();
+                GraphState.editEdgeById(edgeId, null, null, true, true);
+                updateRamseyStatus();
             }
         });
 
@@ -698,6 +825,7 @@ const self: MainI = {
         });
 
         updateSevenBridgeStatus();
+        updateRamseyStatus();
     },
 
     resetSevenBridgeWalk: () => {
@@ -705,6 +833,9 @@ const self: MainI = {
         const cleared = GraphState.getGraphData(GraphState.graph, true, true);
         self.setData(cleared, false, false);
         updateSevenBridgeStatus();
+    },
+    updateRamseyStatus: () => {
+        updateRamseyStatus();
     },
 
 };

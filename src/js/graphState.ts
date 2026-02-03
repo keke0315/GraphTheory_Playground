@@ -242,11 +242,28 @@ export default class GraphState {
         }
     }
 
-    static editEdgeById(id: string | number, newWeight: number | null, color: string | null = null, graph = GraphState.graph) {
-        const newGraph = graph.editEdgeById(id, newWeight, color);
-        if (newGraph instanceof GraphImmut) {
-            window.main.setData(GraphState.getGraphData(newGraph), false, false);
+    static editEdgeById(id: string | number, newWeight: number | null, color: string | null = null, keepLayout = false, clearColor = false, graph = GraphState.graph) {
+        const graphData = GraphState.getGraphData(graph);
+        const graphWithIds = new GraphImmut(graphData.nodes, graphData.edges, graph.isDirected(), graph.isWeighted());
+        const newGraph = graphWithIds.editEdgeById(id, newWeight, color, clearColor);
+        if (!(newGraph instanceof GraphImmut)) {
+            return;
         }
+
+        if (keepLayout && window.network && (window.network as any).body?.data?.edges) {
+            GraphState.graph = newGraph;
+            const edgeUpdate: any = { id: id };
+            if (color !== null) {
+                edgeUpdate.color = { color: color };
+            }
+            else if (clearColor) {
+                edgeUpdate.color = null;
+            }
+            (window.network as any).body.data.edges.update(edgeUpdate);
+            return;
+        }
+
+        window.main.setData(GraphState.getGraphData(newGraph), false, false);
     }
 
     static deleteEdge(from: number | string, to: number | string, weight: (undefined | null | number) = null, graph = GraphState.graph) {

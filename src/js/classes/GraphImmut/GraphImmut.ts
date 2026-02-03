@@ -352,7 +352,7 @@ export default class GraphImmut {
         return new GraphImmut(this.nodes, newEdges, this.directed, this.weighted);
     }
 
-    editEdgeById(id: string | number, newWeight: any, color: string | null = null): GraphImmut | boolean {
+    editEdgeById(id: string | number, newWeight: any, color: string | null = null, clearColor = false): GraphImmut | boolean {
         let foundFirst = false;
         let newEdges = this.edges;
 
@@ -362,13 +362,18 @@ export default class GraphImmut {
             }
             const edgeId = edge.getAttribute("id");
             if (typeof edgeId !== "undefined" && `${edgeId}` === `${id}`) {
-                if (color !== null) {
+                const parsedWeight = newWeight === null ? edge.getWeight() : parseFloat(newWeight);
+                if (clearColor) {
+                    const attrs = { ...edge.getAllAttributes() } as any;
+                    delete attrs.color;
+                    newEdges = newEdges.set(index, new EdgeImmut(edge.getFrom(), edge.getTo(), parsedWeight, attrs));
+                }
+                else if (color !== null) {
                     newEdges = newEdges.set(index,
-                        edge.editEdge(newWeight === null ? null : parseFloat(newWeight),
-                            { color: color }));
+                        edge.editEdge(parsedWeight, { color: color }));
                 }
                 else {
-                    newEdges = newEdges.set(index, edge.editEdge(newWeight === null ? null : parseFloat(newWeight)));
+                    newEdges = newEdges.set(index, edge.editEdge(parsedWeight));
                 }
                 foundFirst = true;
             }

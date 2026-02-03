@@ -373,10 +373,60 @@ export default class UIInteractions {
             fourColorLabel.innerText = languages.current.FourColorMode;
         }
         const fourColorToggle = document.querySelector("#four-color-mode-toggle") as HTMLInputElement;
+        const sevenBridgeToggle = document.querySelector("#seven-bridge-mode-toggle") as HTMLInputElement;
+        const ramseyNumberToggle = document.querySelector("#ramsey-number-mode-toggle") as HTMLInputElement;
+
+        const disableFourColorMode = () => {
+            window.settings.changeOption("fourColorMode", false);
+            if (fourColorToggle) {
+                fourColorToggle.checked = false;
+            }
+            const infoCard = document.getElementById("four-color-info");
+            if (infoCard) {
+                infoCard.style.display = "none";
+            }
+        };
+
+        const disableSevenBridgeMode = () => {
+            window.settings.changeOption("sevenBridgeMode", false);
+            if (sevenBridgeToggle) {
+                sevenBridgeToggle.checked = false;
+            }
+            if (window.main.resetSevenBridgeWalk) {
+                window.main.resetSevenBridgeWalk();
+            }
+            const infoCard = document.getElementById("seven-bridge-info");
+            if (infoCard) {
+                infoCard.style.display = "none";
+            }
+            const statusCard = document.getElementById("seven-bridge-status");
+            if (statusCard) {
+                statusCard.style.display = "none";
+            }
+        };
+
+        const disableRamseyMode = () => {
+            window.settings.changeOption("ramseyNumberMode", false);
+            if (ramseyNumberToggle) {
+                ramseyNumberToggle.checked = false;
+            }
+            const infoCard = document.getElementById("ramsey-number-info");
+            if (infoCard) {
+                infoCard.style.display = "none";
+            }
+            const statusCard = document.getElementById("ramsey-number-status");
+            if (statusCard) {
+                statusCard.style.display = "none";
+            }
+        };
         if (fourColorToggle) {
             fourColorToggle.checked = window.settings.getOption("fourColorMode") as boolean;
             fourColorToggle.addEventListener("change", () => {
                 const enabled = fourColorToggle.checked;
+                if (enabled) {
+                    disableSevenBridgeMode();
+                    disableRamseyMode();
+                }
                 window.settings.changeOption("fourColorMode", enabled);
                 if (enabled && !window.settings.getOption("customColors")) {
                     window.settings.changeOption("customColors", true);
@@ -396,11 +446,14 @@ export default class UIInteractions {
         if (sevenBridgeLabel) {
             sevenBridgeLabel.innerText = languages.current.SevenBridgesMode;
         }
-        const sevenBridgeToggle = document.querySelector("#seven-bridge-mode-toggle") as HTMLInputElement;
         if (sevenBridgeToggle) {
             sevenBridgeToggle.checked = window.settings.getOption("sevenBridgeMode") as boolean;
             sevenBridgeToggle.addEventListener("change", () => {
                 const enabled = sevenBridgeToggle.checked;
+                if (enabled) {
+                    disableFourColorMode();
+                    disableRamseyMode();
+                }
                 window.settings.changeOption("sevenBridgeMode", enabled);
                 if (enabled && !window.settings.getOption("customColors")) {
                     window.settings.changeOption("customColors", true);
@@ -427,15 +480,29 @@ export default class UIInteractions {
         if (ramseyNumberLabel) {
             ramseyNumberLabel.innerText = languages.current.RamseyNumberMode;
         }
-        const ramseyNumberToggle = document.querySelector("#ramsey-number-mode-toggle") as HTMLInputElement;
         if (ramseyNumberToggle) {
             ramseyNumberToggle.checked = window.settings.getOption("ramseyNumberMode") as boolean;
-            ramseyNumberToggle.addEventListener("change", () => {
+            ramseyNumberToggle.addEventListener("change", async () => {
                 const enabled = ramseyNumberToggle.checked;
+                if (enabled) {
+                    disableFourColorMode();
+                    disableSevenBridgeMode();
+                }
                 window.settings.changeOption("ramseyNumberMode", enabled);
+                if (enabled) {
+                    const predefined = (await import("./util/predefinedGraphs")).default;
+                    window.main.setData(predefined._complete(6), false, true, true);
+                }
                 const infoCard = document.getElementById("ramsey-number-info");
                 if (infoCard) {
                     infoCard.style.display = enabled ? "block" : "none";
+                }
+                const statusCard = document.getElementById("ramsey-number-status");
+                if (statusCard) {
+                    statusCard.style.display = enabled ? "block" : "none";
+                }
+                if (window.main.updateRamseyStatus) {
+                    window.main.updateRamseyStatus();
                 }
             });
         }
@@ -485,6 +552,39 @@ export default class UIInteractions {
         const ramseyNumberInfo = document.getElementById("ramsey-number-info");
         if (ramseyNumberInfo) {
             ramseyNumberInfo.style.display = (window.settings.getOption("ramseyNumberMode") as boolean) ? "block" : "none";
+        }
+
+        const ramseyNumberStatusTitle = document.getElementById("ramsey-number-status-title");
+        if (ramseyNumberStatusTitle) {
+            ramseyNumberStatusTitle.innerText = languages.current.RamseyNumberStatusTitle;
+        }
+        const ramseyNumberStatusInstructions = document.getElementById("ramsey-number-status-instructions");
+        if (ramseyNumberStatusInstructions) {
+            ramseyNumberStatusInstructions.innerHTML = languages.current.RamseyNumberStatusBody;
+        }
+        const ramseyNumberStatus = document.getElementById("ramsey-number-status");
+        if (ramseyNumberStatus) {
+            ramseyNumberStatus.style.display = (window.settings.getOption("ramseyNumberMode") as boolean) ? "block" : "none";
+        }
+
+        const ramseyNumberSInput = document.getElementById("ramsey-number-s") as HTMLInputElement | null;
+        if (ramseyNumberSInput) {
+            ramseyNumberSInput.addEventListener("input", () => {
+                if (window.main.updateRamseyStatus) {
+                    window.main.updateRamseyStatus();
+                }
+            });
+        }
+        const ramseyNumberTInput = document.getElementById("ramsey-number-t") as HTMLInputElement | null;
+        if (ramseyNumberTInput) {
+            ramseyNumberTInput.addEventListener("input", () => {
+                if (window.main.updateRamseyStatus) {
+                    window.main.updateRamseyStatus();
+                }
+            });
+        }
+        if (window.settings.getOption("ramseyNumberMode") && window.main.updateRamseyStatus) {
+            window.main.updateRamseyStatus();
         }
 
         const sevenBridgeStatusTitle = document.getElementById("seven-bridge-status-title");
