@@ -53,6 +53,16 @@ Use it on GitHub Pages: https://keke0315.github.io/GraphTheory_Playground/
 - Manually assign one of four colors to each vertex
 - Shows an error if adjacent vertices share the same color
 
+### Seven Bridges Mode
+- Recreates the classic Seven Bridges of Konigsberg puzzle as an interactive walk
+- Click an edge to mark it as used, with each bridge available at most once
+- Enforces walk continuity from the current node(s) so you can test whether an Euler route exists
+
+### Ramsey Number Mode
+- Explore Ramsey number intuition by checking for cliques of size `s` or independent sets of size `t`
+- Adjust the `s` and `t` inputs to test different Ramsey targets on the current graph
+- Left-click an edge to mark it red and right-click it to reset, making it easier to reason about graph/complement structure
+
 ### Builtin Graphs
 - Petersen Graph
 - Konigsberg Bridges Graph
